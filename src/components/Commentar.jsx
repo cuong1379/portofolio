@@ -1,13 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { toast } from "sonner";
-import {
-  collection,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase-comment";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { toast } from "react-toastify";
+import axios from "axios";
 import {
   MessageCircle,
   UserCircle2,
@@ -19,6 +12,8 @@ import {
 } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+
+const API_URL = "https://common-api-production.up.railway.app/portofolio";
 
 const Comment = memo(({ comment, formatDate, index }) => (
   <div className="px-4 pt-4 pb-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group hover:shadow-lg hover:-translate-y-0.5">
@@ -214,45 +209,59 @@ const Komentar = () => {
     });
   }, []);
 
-  useEffect(() => {
-    const commentsRef = collection(db, "portfolio-comments");
-    const q = query(commentsRef, orderBy("createdAt", "desc"));
-
-    return onSnapshot(q, (querySnapshot) => {
-      const commentsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+  const getData = async () => {
+    try {
+      const response = await axios.get(API_URL, {
+        maxRedirects: 0, // Ngăn chặn tự động redirect
+      });
+      const mapData = (response?.data?.slice(1) ?? [])?.map((x, index) => ({
+        id: `cmt-${index}`,
+        profileImage: undefined,
+        userName: x?.[1],
+        content: x?.[2],
+        createdAt: x?.[0],
       }));
-      setComments(commentsData);
-    });
-  }, []);
+      setComments(mapData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-  const uploadImage = useCallback(async (imageFile) => {
-    if (!imageFile) return null;
-    const storageRef = ref(
-      storage,
-      `profile-images/${Date.now()}_${imageFile.name}`
-    );
-    await uploadBytes(storageRef, imageFile);
-    return getDownloadURL(storageRef);
+  const addData = async (data) => {
+    try {
+      await axios.post(
+        `${API_URL}`,
+        { values: data },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      toast.success("🦄 Sent successfully!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      await getData();
+    } catch (error) {
+      console.error("Error adding data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getData();
   }, []);
 
   const handleCommentSubmit = useCallback(
     async ({ newComment, userName, imageFile }) => {
       setError("");
       setIsSubmitting(true);
-
       try {
-        // const profileImageUrl = await uploadImage(imageFile);
-        // await addDoc(collection(db, 'portfolio-comments'), {
-        //     content: newComment,
-        //     userName,
-        //     profileImage: profileImageUrl,
-        //     createdAt: serverTimestamp(),
-        // });
-        setTimeout(() => {
-            toast.success("Sent successful!")
-        }, 1500);
+        await addData([userName, newComment]);
       } catch (error) {
         setError("Failed to post comment. Please try again.");
         console.error("Error adding comment: ", error);
@@ -260,13 +269,15 @@ const Komentar = () => {
         setIsSubmitting(false);
       }
     },
-    [uploadImage]
+    []
   );
 
   const formatDate = useCallback((timestamp) => {
     if (!timestamp) return "";
-    const date = timestamp.toDate();
-    const now = new Date();
+    const dateApi = new Date(timestamp);
+    const timestampApi = dateApi.getTime();
+    const date = timestampApi;
+    const now = new Date()?.getTime();
     const diffMinutes = Math.floor((now - date) / (1000 * 60));
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
