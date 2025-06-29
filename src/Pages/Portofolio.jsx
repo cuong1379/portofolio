@@ -146,28 +146,28 @@ export default function FullWidthTabs() {
 
   const projs = [
     {
+      Img: "/engbloom.png",
+      Title: "EngBloom - Learning english application",
+      Description:
+        "Plant the seeds of vocabulary, let your English bloom. Learn word by word – practice day by day – and watch your English skills grow naturally and with inspiration",
+      Link: "https://engbloom.site/",
+      id: "engbloom_0",
+    },
+    {
       Img: "/friday_ai.png",
-      Title: "Friday - Virtual Assistant",
+      Title: "Friday - Virtual Assistant make your day easier",
       Description:
         "where modernity and cutting-edge technology converge to create an unparalleled experience. We are your reliable companion, ready to assist you anytime, anywhere",
       Link: "https://friday-delta.vercel.app/",
       id: "friday_ai_0",
     },
-        {
+    {
       Img: "/uxmoingay.png",
-      Title: "UX daily",
+      Title: "UX daily - Learn something new every day",
       Description:
         "Discover daily insights, tips, and best practices in UX design. Stay inspired with fresh ideas to enhance user experiences and create intuitive interfaces. Elevate your design skills one day at a time!",
       Link: "https://uxmoingay.vercel.app/",
       id: "uxmoingay_1",
-    },
-    {
-      Img: "/vocabulary.png",
-      Title: "Vocabulary",
-      Description:
-        "Boost your vocabulary with an interactive and engaging learning experience. Practice new words daily with fun quizzes and smart repetition techniques. Master any language, one word at a time!",
-      Link: "https://vocabulary-sable.vercel.app/",
-      id: "vocabulary_2",
     },
   ];
 
